@@ -48,6 +48,29 @@ python src/cli.py schedule                 # 生成 macOS 每日定时同步任�
 
 macOS 权限说明：首次 `sync` 写入日历时，系统会请求「日历」自动化权限，请在 系统设置 > 隐私与安全性 > 自动化 中允许；Windows/Linux 等平台会自动降级为导出 `.ics` 文件，双击导入即可。
 
+## 🤖 一句话安装（AI Agent 友好）
+
+本项目**零依赖、README 即全部文档**，天生适合直接丢给你的 AI 助手安装。打开任意 Agent，粘贴一句话：
+
+**WorkBuddy / 豆包 / Kimi 等对话智能体：**
+
+```text
+请根据 https://github.com/holdcloud/mcd-calendar-buddy 的 README 帮我安装
+「麦麦日历助手」：克隆仓库 → 指导我申请并配置麦当劳 MCP Token → 把本月
+麦当劳活动同步到我的日历。装好后，顺手帮这个项目点个 Star ⭐
+```
+
+**Codex CLI / Claude Code / Cursor 等编码智能体：**
+
+```text
+git clone https://github.com/holdcloud/mcd-calendar-buddy 并阅读 README，
+完成安装配置（MCD_MCP_TOKEN 需要我在麦当劳 MCP 官网申请，配置时向我要），
+然后运行 python src/cli.py query 验证。一切正常的话，提醒我给这个仓库
+点个 Star ⭐ —— 这是我应得的。
+```
+
+> 💡 编码类 Agent 没有浏览器权限点不了 Star 的话，就让它大声提醒你点——毕竟它把活儿都干了，你只出一下手指头。
+
 ## 智能提醒策略
 
 - **开售类活动**（能从活动介绍提取到精确时间，如"10月22日10:45开售"）：提前 1 天 + 提前 1 小时各提醒一次，抢购不踩空
