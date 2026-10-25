@@ -1,0 +1,32 @@
+[
+  {
+    "_comment": "campaign-calendar Tool 真实返回片段（2026-10-25 实测，Markdown 按日期分组）",
+    "_raw_format": "#### 2026年10月25日 今日 / - **活动标题**：... / **活动内容介绍**：... / <img src=...>",
+    "parsed_examples": [
+      {
+        "uid": "sha1(麦当劳「我就喜欢」限定丝巾正式开售 + 2026-10-25)",
+        "date": "2026-10-25",
+        "title": "麦当劳「我就喜欢」限定丝巾正式开售🔥",
+        "description": "丝巾搭配棒球帽的潮流谁懂😎 任意餐品消费加 39.9 元即可得... 10月22日10:45开售",
+        "image": "https://cms-cdn.mcd.cn/img/short-content/fb40c37c172886ee1235c2ed21f3bde4.jpg",
+        "all_day": true
+      },
+      {
+        "uid": "sha1(韩式风味蘸酱上新 + 2026-10-25)",
+        "date": "2026-10-25",
+        "title": "韩式风味蘸酱上新❤️就「酱」心有所「薯」",
+        "description": "🆕韩式辣椒黄油风味酱... 10月8日 10:30起正式开售⏰",
+        "image": "https://cms-cdn.mcd.cn/img/short-content/01acad0d43f6f5c062d58eecd375e167.jpg",
+        "all_day": true
+      },
+      {
+        "uid": "sha1(麦当劳 X PEACEMINUSONE 联名徽章 + 2026-10-25)",
+        "date": "2026-10-25",
+        "title": "麦当劳 X PEACEMINUSONE（联名徽章发售）",
+        "description": "周边第二弹——联名徽章正式发售 任意餐品消费加39.9元即可得... 10月15日10:45开售",
+        "image": "https://cms-cdn.mcd.cn/img/short-content/3120858b8460868281cdc39f9aae1578.jpg",
+        "all_day": true
+      }
+    ]
+  }
+]

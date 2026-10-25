@@ -1,0 +1,3 @@
+# 麦麦日历助手：零第三方依赖
+# 全部功能基于 Python 3.10+ 标准库实现
+# 麦当劳 MCP Server: https://github.com/M-China/mcd-mcp-server
