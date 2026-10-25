@@ -51,6 +51,26 @@ def filter_new(events: list[CalendarEvent]) -> tuple[list[CalendarEvent], list[C
 
 
 # ---------------------------------------------------------------------- #
+# 智能提醒策略
+# ---------------------------------------------------------------------- #
+def smart_alarms(event: CalendarEvent, remind_days_before: int = 1) -> list[int]:
+    """按事件类型生成提醒触发点（返回相对事件开始的提前分钟数，负数=提前）。
+
+    - 定时事件（如 10:45 开售）：提前 N 天 + 提前 1 小时各提醒一次
+    - 全天事件：提前 N 天的 09:00 提醒一次
+    """
+    if not event.all_day:
+        return sorted({-(remind_days_before * 24 * 60), -60})
+    target = event.start.replace(hour=9, minute=0) - _days(remind_days_before - 1)
+    minutes = int((event.start - target).total_seconds() // 60)
+    return [minutes] if minutes > 0 else [-60]
+
+
+def _days(n: int) -> timedelta:
+    return timedelta(days=n)
+
+
+# ---------------------------------------------------------------------- #
 # 方案 B：.ics 导出（跨平台兜底）
 # ---------------------------------------------------------------------- #
 def _ics_escape(text: str) -> str:
@@ -91,15 +111,15 @@ def build_ics(events: list[CalendarEvent], remind_days_before: int = 1) -> str:
             lines.append(f"DTEND:{_ics_dt(e.end)}")
         if e.description:
             lines.append(f"DESCRIPTION:{_ics_escape(e.description[:1800])}")
-        trigger = f"-P{remind_days_before}D"
-        lines += [
-            "BEGIN:VALARM",
-            "ACTION:DISPLAY",
-            f"TRIGGER:{trigger}",
-            f"DESCRIPTION:{_ics_escape(e.title)}",
-            "END:VALARM",
-            "END:VEVENT",
-        ]
+        for minutes in smart_alarms(e, remind_days_before):
+            lines += [
+                "BEGIN:VALARM",
+                "ACTION:DISPLAY",
+                f"TRIGGER:-PT{abs(minutes)}M",
+                f"DESCRIPTION:{_ics_escape(e.title)}",
+                "END:VALARM",
+            ]
+        lines.append("END:VEVENT")
     lines.append("END:VCALENDAR")
     return "\r\n".join(lines) + "\r\n"
 
@@ -137,16 +157,15 @@ def _event_applescript(e: CalendarEvent, remind_days_before: int) -> str:
         f'end date:date "{e.end:%Y-%m-%d %H:%M:%S}", '
         f'description:"{_applescript_quote(desc)}"'
     )
-    alarm = ""
-    if remind_days_before > 0:
-        trigger = -(remind_days_before * 24 * 60)  # 分钟
-        alarm = (
+    alarms = ""
+    for minutes in smart_alarms(e, remind_days_before):
+        alarms += (
             f"\n            make new display alarm at end of theEvent "
-            f"with properties {{trigger interval:{trigger}}}"
+            f"with properties {{trigger interval:{minutes}}}"
         )
     return f'''
         tell calendar "{_applescript_quote(DEFAULT_CALENDAR_NAME)}"
-            set theEvent to make new event with properties {{{props}}}{alarm}
+            set theEvent to make new event with properties {{{props}}}{alarms}
         end tell'''
 
 
