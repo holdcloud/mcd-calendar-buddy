@@ -1,6 +1,13 @@
 # 麦麦日历助手（McD Activity Calendar Buddy）
 
+![CI](https://github.com/holdcloud/mcd-calendar-buddy/actions/workflows/ci.yml/badge.svg)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
+![Dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 > 麦当劳程序员创意开发大赛参赛作品：基于麦当劳 MCP「活动日历查询」能力，把麦当劳的优惠/主题活动自动同步到 macOS 日历，再也不错过任何一场麦麦活动。
+
+![演示](docs/demo.gif)
 
 ## 项目简介
 
@@ -32,12 +39,20 @@ export MCD_MCP_TOKEN="你的麦当劳MCP Token"        # macOS / Linux
 setx MCD_MCP_TOKEN "你的麦当劳MCP Token"          # Windows
 
 # 3. 运行
-python src/cli.py query              # 查询当月麦当劳活动
-python src/cli.py sync               # 同步到 macOS 日历（默认提前 1 天提醒）
-python src/cli.py export -o mc.ics   # 导出 .ics（任何平台可用）
+python src/cli.py query                    # 查询当月麦当劳活动
+python src/cli.py query --filter 联名,新品  # 关键词订阅过滤
+python src/cli.py sync                     # 同步到 macOS 日历（智能提醒）
+python src/cli.py export -o mc.ics         # 导出 .ics（任何平台可用）
+python src/cli.py schedule                 # 生成 macOS 每日定时同步任务
 ```
 
 macOS 权限说明：首次 `sync` 写入日历时，系统会请求「日历」自动化权限，请在 系统设置 > 隐私与安全性 > 自动化 中允许；Windows/Linux 等平台会自动降级为导出 `.ics` 文件，双击导入即可。
+
+## 智能提醒策略
+
+- **开售类活动**（能从活动介绍提取到精确时间，如"10月22日10:45开售"）：提前 1 天 + 提前 1 小时各提醒一次，抢购不踩空
+- **常规活动**（无精确时间）：提前 1 天上午 9:00 提醒，不半夜吵你
+- 提醒天数可通过 `--remind-days N` 自定义
 
 ## 使用示例
 
@@ -54,6 +69,11 @@ $ python src/cli.py query
 $ python src/cli.py sync
 ✅ 新增 21 条，跳过已同步 0 条
 事件已写入日历「麦麦活动」，到点自动提醒。
+
+$ python src/cli.py query --filter 麦旋风
+共查询到 2 条活动：
+  [2026-10-25 全天] 一口爆汁！蓝莓爆爆珠麦旋风上新
+  [2026-11-03 全天] 一口爆汁！蓝莓爆爆珠麦旋风上新
 ```
 
 自然语言场景（配合 WorkBuddy / 支持 MCP 的智能体使用）：
@@ -68,11 +88,13 @@ $ python src/cli.py sync
 | 功能 | 状态 |
 | --- | --- |
 | 调用麦当劳 MCP `campaign-calendar` 查询活动 | ✅ 已实现（真实联调通过） |
-| 活动 Markdown 解析 → 日历事件（含开售时间提取） | ✅ 已实现 |
+| 活动 Markdown 解析 → 日历事件（含开售时间提取） | ✅ 已实现（8 个单测覆盖降级场景） |
 | 写入 macOS 日历（Calendar.app，AppleScript） | ✅ 已实现 |
 | .ics 导出兜底（跨平台） | ✅ 已实现 |
 | UID 去重（重复同步不产生冗余事件） | ✅ 已实现 |
-| 活动开始前自动提醒（VALARM / display alarm） | ✅ 已实现 |
+| 智能提醒（开售类 T-1天+T-1小时；全天活动前 1 天 09:00） | ✅ 已实现 |
+| 关键词订阅过滤（`--filter 联名,新品`） | ✅ 已实现 |
+| macOS 每日定时自动同步（launchd 一键生成） | ✅ 已实现 |
 | 自然语言入口（WorkBuddy 智能体联动） | 🚧 规划中 |
 
 ## 项目结构
@@ -84,17 +106,22 @@ mcd-calendar-buddy/
 ├── MCP_INTEGRATION.md         # 麦当劳 MCP 集成说明
 ├── mcp-config.example.json    # 脱敏后的 MCP 配置示例
 ├── workbuddy.md               # WorkBuddy 对话上下文（联动活动）
-├── requirements.txt           # Python 依赖
+├── requirements.txt           # 运行依赖（零依赖）
+├── requirements-dev.txt       # 开发/测试依赖（pytest）
+├── .github/workflows/ci.yml   # CI：多版本 Python 自动测试
 ├── docs/
-│   └── design.md              # 架构与设计说明
-├── src/
-│   ├── __init__.py
-│   ├── mcd_client.py          # 麦当劳 MCP 客户端（活动日历查询）
-│   ├── event_builder.py       # 活动数据 → 日历事件转换
-│   ├── calendar_sync.py       # macOS 日历写入（AppleScript / EventKit）
-│   └── cli.py                 # 命令行入口
-└── examples/
-    └── sample_events.json     # 活动数据与日历事件示例
+│   ├── design.md              # 架构与设计说明
+│   └── demo.gif               # 演示动图
+├── tests/
+│   └── test_event_builder.py  # 解析器单测（真实数据 fixture）
+├── examples/
+│   └── sample_events.json     # 活动数据与日历事件示例
+└── src/
+    ├── __init__.py
+    ├── mcd_client.py          # 麦当劳 MCP 客户端（campaign-calendar）
+    ├── event_builder.py       # 活动 Markdown → 日历事件（解析/UID/过滤）
+    ├── calendar_sync.py       # macOS 日历写入 + .ics 导出 + 智能提醒
+    └── cli.py                 # 命令行入口（query/sync/export/schedule）
 ```
 
 ## 参赛声明
