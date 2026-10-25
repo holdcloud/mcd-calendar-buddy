@@ -158,3 +158,19 @@ def dedupe(events: list[CalendarEvent]) -> list[CalendarEvent]:
         seen.add(event.uid)
         result.append(event)
     return result
+
+
+def filter_events(events: list[CalendarEvent], keywords: str | None) -> list[CalendarEvent]:
+    """按关键词订阅过滤（逗号分隔，命中标题或描述任一关键词即保留）。
+
+    :param keywords: 如 "联名,新品,优惠券"；None 或空串表示不过滤。
+    """
+    if not keywords:
+        return events
+    keys = [k.strip().lower() for k in keywords.split(",") if k.strip()]
+    if not keys:
+        return events
+    return [
+        e for e in events
+        if any(k in e.title.lower() or k in e.description.lower() for k in keys)
+    ]
